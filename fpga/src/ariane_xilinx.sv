@@ -174,8 +174,8 @@ assign rst = ddr_sync_reset;
 // ---------------
 axi_node_wrap_with_slices #(
     // three ports from Ariane (instruction, data and bypass)
-    .NB_SLAVE           ( NBSlave                    ),
-    .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
+    .NB_SUBORDINATE           ( NBSlave                    ),
+    .NB_MANAGER          ( ariane_soc::NB_PERIPHERALS ),
     .AXI_ADDR_WIDTH     ( AxiAddrWidth               ),
     .AXI_DATA_WIDTH     ( AxiDataWidth               ),
     .AXI_USER_WIDTH     ( AxiUserWidth               ),

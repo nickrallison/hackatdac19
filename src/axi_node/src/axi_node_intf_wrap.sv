@@ -9,8 +9,8 @@
 // specific language governing permissions and limitations under the License.
 
 module axi_node_intf_wrap #(
-    parameter NB_MASTER      = 4,
-    parameter NB_SLAVE       = 4,
+    parameter NB_MANAGER      = 4,
+    parameter NB_SUBORDINATE       = 4,
     parameter NB_PRIV_LVL    = 4, 
     parameter PRIV_LVL_WIDTH = 4,
     parameter AXI_ADDR_WIDTH = 32,
@@ -23,16 +23,16 @@ module axi_node_intf_wrap #(
     input logic rst_n,
     input logic test_en_i,
 
-    AXI_BUS.Slave slave[NB_SLAVE-1:0],
+    AXI_BUS.Slave slave[NB_SUBORDINATE-1:0],
 
-    AXI_BUS.Master master[NB_MASTER-1:0],
+    AXI_BUS.Master master[NB_MANAGER-1:0],
     
     input logic [PRIV_LVL_WIDTH-1:0]      priv_lvl_i,
-    input logic [NB_SLAVE-1:0][NB_MASTER-1:0][NB_PRIV_LVL-1:0] access_ctrl_i,
+    input logic [NB_SUBORDINATE-1:0][NB_MANAGER-1:0][NB_PRIV_LVL-1:0] access_ctrl_i,
 
     // Memory map
-    input  logic [NB_MASTER-1:0][AXI_ADDR_WIDTH-1:0]  start_addr_i,
-    input  logic [NB_MASTER-1:0][AXI_ADDR_WIDTH-1:0]  end_addr_i
+    input  logic [NB_MANAGER-1:0][AXI_ADDR_WIDTH-1:0]  start_addr_i,
+    input  logic [NB_MANAGER-1:0][AXI_ADDR_WIDTH-1:0]  end_addr_i
   );
 
   localparam AXI_STRB_WIDTH = AXI_DATA_WIDTH/8;
@@ -40,119 +40,119 @@ module axi_node_intf_wrap #(
 
   // AXI ID WIDTHs for master and slave IPS
   localparam AXI_ID_WIDTH_TARG =   AXI_ID_WIDTH;
-  localparam AXI_ID_WIDTH_INIT =   AXI_ID_WIDTH_TARG + $clog2(NB_SLAVE);
+  localparam AXI_ID_WIDTH_INIT =   AXI_ID_WIDTH_TARG + $clog2(NB_SUBORDINATE);
 
 
   // Signals to slave periperhals
-  logic [NB_MASTER-1:0][AXI_ID_WIDTH_INIT-1:0] s_master_aw_id;
-  logic [NB_MASTER-1:0][AXI_ADDR_WIDTH-1:0]    s_master_aw_addr;
-  logic [NB_MASTER-1:0][7:0]                   s_master_aw_len;
-  logic [NB_MASTER-1:0][2:0]                   s_master_aw_size;
-  logic [NB_MASTER-1:0][1:0]                   s_master_aw_burst;
-  logic [NB_MASTER-1:0]                        s_master_aw_lock;
-  logic [NB_MASTER-1:0][3:0]                   s_master_aw_cache;
-  logic [NB_MASTER-1:0][2:0]                   s_master_aw_prot;
-  logic [NB_MASTER-1:0][3:0]                   s_master_aw_region;
-  logic [NB_MASTER-1:0][AXI_USER_WIDTH-1:0]    s_master_aw_user;
-  logic [NB_MASTER-1:0][3:0]                   s_master_aw_qos;
-  logic [NB_MASTER-1:0]                        s_master_aw_valid;
-  logic [NB_MASTER-1:0]                        s_master_aw_ready;
+  logic [NB_MANAGER-1:0][AXI_ID_WIDTH_INIT-1:0] s_master_aw_id;
+  logic [NB_MANAGER-1:0][AXI_ADDR_WIDTH-1:0]    s_master_aw_addr;
+  logic [NB_MANAGER-1:0][7:0]                   s_master_aw_len;
+  logic [NB_MANAGER-1:0][2:0]                   s_master_aw_size;
+  logic [NB_MANAGER-1:0][1:0]                   s_master_aw_burst;
+  logic [NB_MANAGER-1:0]                        s_master_aw_lock;
+  logic [NB_MANAGER-1:0][3:0]                   s_master_aw_cache;
+  logic [NB_MANAGER-1:0][2:0]                   s_master_aw_prot;
+  logic [NB_MANAGER-1:0][3:0]                   s_master_aw_region;
+  logic [NB_MANAGER-1:0][AXI_USER_WIDTH-1:0]    s_master_aw_user;
+  logic [NB_MANAGER-1:0][3:0]                   s_master_aw_qos;
+  logic [NB_MANAGER-1:0]                        s_master_aw_valid;
+  logic [NB_MANAGER-1:0]                        s_master_aw_ready;
 
-  logic [NB_MASTER-1:0][AXI_ID_WIDTH_INIT-1:0] s_master_ar_id;
-  logic [NB_MASTER-1:0][AXI_ADDR_WIDTH-1:0]    s_master_ar_addr;
-  logic [NB_MASTER-1:0][7:0]                   s_master_ar_len;
-  logic [NB_MASTER-1:0][2:0]                   s_master_ar_size;
-  logic [NB_MASTER-1:0][1:0]                   s_master_ar_burst;
-  logic [NB_MASTER-1:0]                        s_master_ar_lock;
-  logic [NB_MASTER-1:0][3:0]                   s_master_ar_cache;
-  logic [NB_MASTER-1:0][2:0]                   s_master_ar_prot;
-  logic [NB_MASTER-1:0][3:0]                   s_master_ar_region;
-  logic [NB_MASTER-1:0][AXI_USER_WIDTH-1:0]    s_master_ar_user;
-  logic [NB_MASTER-1:0][3:0]                   s_master_ar_qos;
-  logic [NB_MASTER-1:0]                        s_master_ar_valid;
-  logic [NB_MASTER-1:0]                        s_master_ar_ready;
+  logic [NB_MANAGER-1:0][AXI_ID_WIDTH_INIT-1:0] s_master_ar_id;
+  logic [NB_MANAGER-1:0][AXI_ADDR_WIDTH-1:0]    s_master_ar_addr;
+  logic [NB_MANAGER-1:0][7:0]                   s_master_ar_len;
+  logic [NB_MANAGER-1:0][2:0]                   s_master_ar_size;
+  logic [NB_MANAGER-1:0][1:0]                   s_master_ar_burst;
+  logic [NB_MANAGER-1:0]                        s_master_ar_lock;
+  logic [NB_MANAGER-1:0][3:0]                   s_master_ar_cache;
+  logic [NB_MANAGER-1:0][2:0]                   s_master_ar_prot;
+  logic [NB_MANAGER-1:0][3:0]                   s_master_ar_region;
+  logic [NB_MANAGER-1:0][AXI_USER_WIDTH-1:0]    s_master_ar_user;
+  logic [NB_MANAGER-1:0][3:0]                   s_master_ar_qos;
+  logic [NB_MANAGER-1:0]                        s_master_ar_valid;
+  logic [NB_MANAGER-1:0]                        s_master_ar_ready;
 
-  logic [NB_MASTER-1:0][AXI_DATA_WIDTH-1:0]    s_master_w_data;
-  logic [NB_MASTER-1:0][AXI_STRB_WIDTH-1:0]    s_master_w_strb;
-  logic [NB_MASTER-1:0]                        s_master_w_last;
-  logic [NB_MASTER-1:0][AXI_USER_WIDTH-1:0]    s_master_w_user;
-  logic [NB_MASTER-1:0]                        s_master_w_valid;
-  logic [NB_MASTER-1:0]                        s_master_w_ready;
+  logic [NB_MANAGER-1:0][AXI_DATA_WIDTH-1:0]    s_master_w_data;
+  logic [NB_MANAGER-1:0][AXI_STRB_WIDTH-1:0]    s_master_w_strb;
+  logic [NB_MANAGER-1:0]                        s_master_w_last;
+  logic [NB_MANAGER-1:0][AXI_USER_WIDTH-1:0]    s_master_w_user;
+  logic [NB_MANAGER-1:0]                        s_master_w_valid;
+  logic [NB_MANAGER-1:0]                        s_master_w_ready;
 
-  logic [NB_MASTER-1:0][AXI_ID_WIDTH_INIT-1:0] s_master_b_id;
-  logic [NB_MASTER-1:0][1:0]                   s_master_b_resp;
-  logic [NB_MASTER-1:0]                        s_master_b_valid;
-  logic [NB_MASTER-1:0][AXI_USER_WIDTH-1:0]    s_master_b_user;
-  logic [NB_MASTER-1:0]                        s_master_b_ready;
+  logic [NB_MANAGER-1:0][AXI_ID_WIDTH_INIT-1:0] s_master_b_id;
+  logic [NB_MANAGER-1:0][1:0]                   s_master_b_resp;
+  logic [NB_MANAGER-1:0]                        s_master_b_valid;
+  logic [NB_MANAGER-1:0][AXI_USER_WIDTH-1:0]    s_master_b_user;
+  logic [NB_MANAGER-1:0]                        s_master_b_ready;
 
-  logic [NB_MASTER-1:0][AXI_ID_WIDTH_INIT-1:0] s_master_r_id;
-  logic [NB_MASTER-1:0][AXI_DATA_WIDTH-1:0]    s_master_r_data;
-  logic [NB_MASTER-1:0][1:0]                   s_master_r_resp;
-  logic [NB_MASTER-1:0]                        s_master_r_last;
-  logic [NB_MASTER-1:0][AXI_USER_WIDTH-1:0]    s_master_r_user;
-  logic [NB_MASTER-1:0]                        s_master_r_valid;
-  logic [NB_MASTER-1:0]                        s_master_r_ready;
+  logic [NB_MANAGER-1:0][AXI_ID_WIDTH_INIT-1:0] s_master_r_id;
+  logic [NB_MANAGER-1:0][AXI_DATA_WIDTH-1:0]    s_master_r_data;
+  logic [NB_MANAGER-1:0][1:0]                   s_master_r_resp;
+  logic [NB_MANAGER-1:0]                        s_master_r_last;
+  logic [NB_MANAGER-1:0][AXI_USER_WIDTH-1:0]    s_master_r_user;
+  logic [NB_MANAGER-1:0]                        s_master_r_valid;
+  logic [NB_MANAGER-1:0]                        s_master_r_ready;
 
   // Signals from AXI masters
-  logic [NB_SLAVE-1:0][AXI_ID_WIDTH_TARG-1:0] s_slave_aw_id;
-  logic [NB_SLAVE-1:0][AXI_ADDR_WIDTH-1:0]    s_slave_aw_addr;
-  logic [NB_SLAVE-1:0][7:0]                   s_slave_aw_len;
-  logic [NB_SLAVE-1:0][2:0]                   s_slave_aw_size;
-  logic [NB_SLAVE-1:0][1:0]                   s_slave_aw_burst;
-  logic [NB_SLAVE-1:0]                        s_slave_aw_lock;
-  logic [NB_SLAVE-1:0][3:0]                   s_slave_aw_cache;
-  logic [NB_SLAVE-1:0][2:0]                   s_slave_aw_prot;
-  logic [NB_SLAVE-1:0][3:0]                   s_slave_aw_region;
-  logic [NB_SLAVE-1:0][AXI_USER_WIDTH-1:0]    s_slave_aw_user;
-  logic [NB_SLAVE-1:0][3:0]                   s_slave_aw_qos;
-  logic [NB_SLAVE-1:0]                        s_slave_aw_valid;
-  logic [NB_SLAVE-1:0]                        s_slave_aw_ready;
+  logic [NB_SUBORDINATE-1:0][AXI_ID_WIDTH_TARG-1:0] s_slave_aw_id;
+  logic [NB_SUBORDINATE-1:0][AXI_ADDR_WIDTH-1:0]    s_slave_aw_addr;
+  logic [NB_SUBORDINATE-1:0][7:0]                   s_slave_aw_len;
+  logic [NB_SUBORDINATE-1:0][2:0]                   s_slave_aw_size;
+  logic [NB_SUBORDINATE-1:0][1:0]                   s_slave_aw_burst;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_aw_lock;
+  logic [NB_SUBORDINATE-1:0][3:0]                   s_slave_aw_cache;
+  logic [NB_SUBORDINATE-1:0][2:0]                   s_slave_aw_prot;
+  logic [NB_SUBORDINATE-1:0][3:0]                   s_slave_aw_region;
+  logic [NB_SUBORDINATE-1:0][AXI_USER_WIDTH-1:0]    s_slave_aw_user;
+  logic [NB_SUBORDINATE-1:0][3:0]                   s_slave_aw_qos;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_aw_valid;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_aw_ready;
 
-  logic [NB_SLAVE-1:0][AXI_ID_WIDTH_TARG-1:0] s_slave_ar_id;
-  logic [NB_SLAVE-1:0][AXI_ADDR_WIDTH-1:0]    s_slave_ar_addr;
-  logic [NB_SLAVE-1:0][7:0]                   s_slave_ar_len;
-  logic [NB_SLAVE-1:0][2:0]                   s_slave_ar_size;
-  logic [NB_SLAVE-1:0][1:0]                   s_slave_ar_burst;
-  logic [NB_SLAVE-1:0]                        s_slave_ar_lock;
-  logic [NB_SLAVE-1:0][3:0]                   s_slave_ar_cache;
-  logic [NB_SLAVE-1:0][2:0]                   s_slave_ar_prot;
-  logic [NB_SLAVE-1:0][3:0]                   s_slave_ar_region;
-  logic [NB_SLAVE-1:0][AXI_USER_WIDTH-1:0]    s_slave_ar_user;
-  logic [NB_SLAVE-1:0][3:0]                   s_slave_ar_qos;
-  logic [NB_SLAVE-1:0]                        s_slave_ar_valid;
-  logic [NB_SLAVE-1:0]                        s_slave_ar_ready;
+  logic [NB_SUBORDINATE-1:0][AXI_ID_WIDTH_TARG-1:0] s_slave_ar_id;
+  logic [NB_SUBORDINATE-1:0][AXI_ADDR_WIDTH-1:0]    s_slave_ar_addr;
+  logic [NB_SUBORDINATE-1:0][7:0]                   s_slave_ar_len;
+  logic [NB_SUBORDINATE-1:0][2:0]                   s_slave_ar_size;
+  logic [NB_SUBORDINATE-1:0][1:0]                   s_slave_ar_burst;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_ar_lock;
+  logic [NB_SUBORDINATE-1:0][3:0]                   s_slave_ar_cache;
+  logic [NB_SUBORDINATE-1:0][2:0]                   s_slave_ar_prot;
+  logic [NB_SUBORDINATE-1:0][3:0]                   s_slave_ar_region;
+  logic [NB_SUBORDINATE-1:0][AXI_USER_WIDTH-1:0]    s_slave_ar_user;
+  logic [NB_SUBORDINATE-1:0][3:0]                   s_slave_ar_qos;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_ar_valid;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_ar_ready;
 
-  logic [NB_SLAVE-1:0][AXI_DATA_WIDTH-1:0]    s_slave_w_data;
-  logic [NB_SLAVE-1:0][AXI_STRB_WIDTH-1:0]    s_slave_w_strb;
-  logic [NB_SLAVE-1:0]                        s_slave_w_last;
-  logic [NB_SLAVE-1:0][AXI_USER_WIDTH-1:0]    s_slave_w_user;
-  logic [NB_SLAVE-1:0]                        s_slave_w_valid;
-  logic [NB_SLAVE-1:0]                        s_slave_w_ready;
+  logic [NB_SUBORDINATE-1:0][AXI_DATA_WIDTH-1:0]    s_slave_w_data;
+  logic [NB_SUBORDINATE-1:0][AXI_STRB_WIDTH-1:0]    s_slave_w_strb;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_w_last;
+  logic [NB_SUBORDINATE-1:0][AXI_USER_WIDTH-1:0]    s_slave_w_user;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_w_valid;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_w_ready;
 
-  logic [NB_SLAVE-1:0][AXI_ID_WIDTH_TARG-1:0] s_slave_b_id;
-  logic [NB_SLAVE-1:0][1:0]                   s_slave_b_resp;
-  logic [NB_SLAVE-1:0]                        s_slave_b_valid;
-  logic [NB_SLAVE-1:0][AXI_USER_WIDTH-1:0]    s_slave_b_user;
-  logic [NB_SLAVE-1:0]                        s_slave_b_ready;
+  logic [NB_SUBORDINATE-1:0][AXI_ID_WIDTH_TARG-1:0] s_slave_b_id;
+  logic [NB_SUBORDINATE-1:0][1:0]                   s_slave_b_resp;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_b_valid;
+  logic [NB_SUBORDINATE-1:0][AXI_USER_WIDTH-1:0]    s_slave_b_user;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_b_ready;
 
-  logic [NB_SLAVE-1:0][AXI_ID_WIDTH_TARG-1:0] s_slave_r_id;
-  logic [NB_SLAVE-1:0][AXI_DATA_WIDTH-1:0]    s_slave_r_data;
-  logic [NB_SLAVE-1:0][1:0]                   s_slave_r_resp;
-  logic [NB_SLAVE-1:0]                        s_slave_r_last;
-  logic [NB_SLAVE-1:0][AXI_USER_WIDTH-1:0]    s_slave_r_user;
-  logic [NB_SLAVE-1:0]                        s_slave_r_valid;
-  logic [NB_SLAVE-1:0]                        s_slave_r_ready;
+  logic [NB_SUBORDINATE-1:0][AXI_ID_WIDTH_TARG-1:0] s_slave_r_id;
+  logic [NB_SUBORDINATE-1:0][AXI_DATA_WIDTH-1:0]    s_slave_r_data;
+  logic [NB_SUBORDINATE-1:0][1:0]                   s_slave_r_resp;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_r_last;
+  logic [NB_SUBORDINATE-1:0][AXI_USER_WIDTH-1:0]    s_slave_r_user;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_r_valid;
+  logic [NB_SUBORDINATE-1:0]                        s_slave_r_ready;
 
   // Signals Used to configure the AXI node
-  logic [NB_REGION-1:0][NB_MASTER-1:0][AXI_ADDR_WIDTH-1:0] s_start_addr;
-  logic [NB_REGION-1:0][NB_MASTER-1:0][AXI_ADDR_WIDTH-1:0] s_end_addr;
-  logic [NB_REGION-1:0][NB_MASTER-1:0]                     s_valid_rule;
-  logic [NB_SLAVE-1:0][NB_MASTER-1:0]                      s_connectivity_map;
+  logic [NB_REGION-1:0][NB_MANAGER-1:0][AXI_ADDR_WIDTH-1:0] s_start_addr;
+  logic [NB_REGION-1:0][NB_MANAGER-1:0][AXI_ADDR_WIDTH-1:0] s_end_addr;
+  logic [NB_REGION-1:0][NB_MANAGER-1:0]                     s_valid_rule;
+  logic [NB_SUBORDINATE-1:0][NB_MANAGER-1:0]                      s_connectivity_map;
 
 
   generate
     genvar i;
-    for(i = 0; i < NB_MASTER; i++)
+    for(i = 0; i < NB_MANAGER; i++)
     begin
       assign                        master[i].aw_id[AXI_ID_WIDTH_INIT-1:0] = s_master_aw_id[i];
       assign                        master[i].aw_addr                      = s_master_aw_addr[i];
@@ -210,7 +210,7 @@ module axi_node_intf_wrap #(
 
   generate
     genvar j;
-    for(j = 0; j < NB_SLAVE; j++)
+    for(j = 0; j < NB_SUBORDINATE; j++)
     begin
       assign s_slave_aw_id[j]     = slave[j].aw_id[AXI_ID_WIDTH_TARG-1:0];
       assign s_slave_aw_addr[j]   = slave[j].aw_addr;
@@ -267,8 +267,8 @@ module axi_node_intf_wrap #(
   #(
     .AXI_ADDRESS_W      ( AXI_ADDR_WIDTH    ),
     .AXI_DATA_W         ( AXI_DATA_WIDTH    ),
-    .N_MASTER_PORT      ( NB_MASTER         ),
-    .N_SLAVE_PORT       ( NB_SLAVE          ),
+    .N_MASTER_PORT      ( NB_MANAGER         ),
+    .N_SLAVE_PORT       ( NB_SUBORDINATE          ),
     .AXI_ID_IN          ( AXI_ID_WIDTH_TARG ),
     .AXI_USER_W         ( AXI_USER_WIDTH    ),
     .N_REGION           ( NB_REGION         )
@@ -388,8 +388,8 @@ module axi_node_intf_wrap #(
 
   connectivity_mapping  
   #(
-    .NB_SLAVE       ( NB_SLAVE       ),
-    .NB_MASTER      ( NB_MASTER      ),
+    .NB_SUBORDINATE       ( NB_SUBORDINATE       ),
+    .NB_MANAGER      ( NB_MANAGER      ),
     .NB_PRIV_LVL    ( NB_PRIV_LVL    ), 
     .PRIV_LVL_WIDTH ( PRIV_LVL_WIDTH )
   ) 
@@ -407,15 +407,15 @@ endmodule
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 module connectivity_mapping #(
-    parameter NB_MASTER      = 4,
-    parameter NB_SLAVE       = 4,
+    parameter NB_MANAGER      = 4,
+    parameter NB_SUBORDINATE       = 4,
     parameter NB_PRIV_LVL    = 4,   
     parameter PRIV_LVL_WIDTH = 4   
   )(
     input logic [PRIV_LVL_WIDTH-1:0] 	       priv_lvl_i,   
-    input logic [NB_SLAVE-1:0][NB_MASTER-1:0][NB_PRIV_LVL-1:0] access_ctrl_i,  
+    input logic [NB_SUBORDINATE-1:0][NB_MANAGER-1:0][NB_PRIV_LVL-1:0] access_ctrl_i,  
     
-    output logic [NB_SLAVE-1:0][NB_MASTER-1:0]  connectivity_map_o
+    output logic [NB_SUBORDINATE-1:0][NB_MANAGER-1:0]  connectivity_map_o
   ); 
 
     
@@ -423,9 +423,9 @@ module connectivity_mapping #(
 
   generate
     
-    for (i=0; i<NB_SLAVE; i++)
+    for (i=0; i<NB_SUBORDINATE; i++)
     begin
-      	for (j=0; j<NB_MASTER; j++)
+      	for (j=0; j<NB_MANAGER; j++)
       	begin
 	  assign connectivity_map_o[i][j] = access_ctrl_i[i][j][priv_lvl_i] || ((j==6) && access_ctrl_i[i][7][priv_lvl_i]) ; 
       	end  		    		      		

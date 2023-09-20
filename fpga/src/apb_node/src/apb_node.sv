@@ -18,7 +18,7 @@
 // Description:    This component implements a configurable APB node
 
 module apb_node #(
-        parameter int unsigned NB_MASTER      = 8,
+        parameter int unsigned NB_MANAGER      = 8,
         parameter int unsigned APB_DATA_WIDTH = 32,
         parameter int unsigned APB_ADDR_WIDTH = 32
 )(
@@ -33,25 +33,25 @@ module apb_node #(
         output logic 					 pslverr_o,
 
         // MASTER PORTS
-        output logic [NB_MASTER-1:0] 			 penable_o,
-        output logic [NB_MASTER-1:0] 			 pwrite_o,
-        output logic [NB_MASTER-1:0][APB_ADDR_WIDTH-1:0] paddr_o,
-        output logic [NB_MASTER-1:0] 			 psel_o,
-        output logic [NB_MASTER-1:0][APB_DATA_WIDTH-1:0] pwdata_o,
-        input logic [NB_MASTER-1:0][APB_DATA_WIDTH-1:0]  prdata_i,
-        input logic [NB_MASTER-1:0] 			 pready_i,
-        input logic [NB_MASTER-1:0] 			 pslverr_i,
+        output logic [NB_MANAGER-1:0] 			 penable_o,
+        output logic [NB_MANAGER-1:0] 			 pwrite_o,
+        output logic [NB_MANAGER-1:0][APB_ADDR_WIDTH-1:0] paddr_o,
+        output logic [NB_MANAGER-1:0] 			 psel_o,
+        output logic [NB_MANAGER-1:0][APB_DATA_WIDTH-1:0] pwdata_o,
+        input logic [NB_MANAGER-1:0][APB_DATA_WIDTH-1:0]  prdata_i,
+        input logic [NB_MANAGER-1:0] 			 pready_i,
+        input logic [NB_MANAGER-1:0] 			 pslverr_i,
 
         // CONFIGURATION PORT
-        input logic [NB_MASTER-1:0][APB_ADDR_WIDTH-1:0]  START_ADDR_i,
-        input logic [NB_MASTER-1:0][APB_ADDR_WIDTH-1:0]  END_ADDR_i
+        input logic [NB_MANAGER-1:0][APB_ADDR_WIDTH-1:0]  START_ADDR_i,
+        input logic [NB_MANAGER-1:0][APB_ADDR_WIDTH-1:0]  END_ADDR_i
     );
 
     always_comb begin : match_address
         psel_o = '0;
 
         // generate the select signal based on the supplied address
-        for (int unsigned i = 0; i < NB_MASTER; i++)
+        for (int unsigned i = 0; i < NB_MANAGER; i++)
             psel_o[i]  =  psel_i & (paddr_i >= START_ADDR_i[i]) && (paddr_i <= END_ADDR_i[i]);
     end
 
@@ -65,7 +65,7 @@ module apb_node #(
         pready_o  = 1'b0;
         pslverr_o = 1'b0;
         // select the right master
-        for (int unsigned i = 0; i < NB_MASTER; i++) begin
+        for (int unsigned i = 0; i < NB_MANAGER; i++) begin
             // master j was selected because the address matched int the generate statement above
             if (psel_o[i]) begin
                 // master out - slave in

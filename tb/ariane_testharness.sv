@@ -73,16 +73,16 @@ module ariane_testharness #(
 
     assign test_en = 1'b0;
 
-    localparam NB_SLAVE = 2;
+    localparam NB_SUBORDINATE = 2;
 
-    localparam AXI_ID_WIDTH_SLAVES = AXI_ID_WIDTH + $clog2(NB_SLAVE);
+    localparam AXI_ID_WIDTH_SLAVES = AXI_ID_WIDTH + $clog2(NB_SUBORDINATE);
 
     AXI_BUS #(
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
         .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
-    ) slave[NB_SLAVE-1:0]();
+    ) slave[NB_SUBORDINATE-1:0]();
 
     AXI_BUS #(
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
@@ -439,21 +439,21 @@ module ariane_testharness #(
     riscv::priv_lvl_t           priv_lvl_processor;   
     logic [riscv::PRIV_LVL_WIDTH-1:0] priv_lvl ; 
     assign priv_lvl = priv_lvl_processor ; 
-    logic [NB_SLAVE-1:0][ariane_soc::NB_PERIPHERALS-1:0][riscv::NB_PRIV_LVL-1:0] access_ctrl ;   
+    logic [NB_SUBORDINATE-1:0][ariane_soc::NB_PERIPHERALS-1:0][riscv::NB_PRIV_LVL-1:0] access_ctrl ;   
     
     // Getting configuration registers form FUSE memory. 
     genvar i,j;
 
     generate
-        for (i=0; i<NB_SLAVE; i++) begin
+        for (i=0; i<NB_SUBORDINATE; i++) begin
             for (j=0; j<ariane_soc::NB_PERIPHERALS; j++) begin
                 assign access_ctrl[i][j] = access_ctrl_reg[i][4*j +: 4];
             end
         end
     endgenerate
     axi_node_intf_wrap #(
-        .NB_SLAVE           ( NB_SLAVE                   ),
-        .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
+        .NB_SUBORDINATE           ( NB_SUBORDINATE                   ),
+        .NB_MANAGER          ( ariane_soc::NB_PERIPHERALS ),
 	.NB_PRIV_LVL	    ( riscv::NB_PRIV_LVL	 ), 
 	.PRIV_LVL_WIDTH	    ( riscv::PRIV_LVL_WIDTH	 ),
         .AXI_ADDR_WIDTH     ( AXI_ADDRESS_WIDTH          ),

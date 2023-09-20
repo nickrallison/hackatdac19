@@ -18,7 +18,7 @@
 // Description:    This component implements a wrapper for a configurable APB node
 
 module apb_node_wrap #(
-        parameter int unsigned NB_MASTER      = 8,
+        parameter int unsigned NB_MANAGER      = 8,
         parameter int unsigned APB_DATA_WIDTH = 32,
         parameter int unsigned APB_ADDR_WIDTH = 32
 )(
@@ -27,22 +27,22 @@ module apb_node_wrap #(
         // Slave Port
         APB_BUS.Slave                                    apb_slave,
         // Master Ports
-        APB_BUS.Master                                   apb_masters [NB_MASTER-1:0],
+        APB_BUS.Master                                   apb_masters [NB_MANAGER-1:0],
         // Configuration Port
-        input  logic [NB_MASTER-1:0][APB_ADDR_WIDTH-1:0] start_addr_i,
-        input  logic [NB_MASTER-1:0][APB_ADDR_WIDTH-1:0] end_addr_i
+        input  logic [NB_MANAGER-1:0][APB_ADDR_WIDTH-1:0] start_addr_i,
+        input  logic [NB_MANAGER-1:0][APB_ADDR_WIDTH-1:0] end_addr_i
     );
 
-    logic [NB_MASTER-1:0]                     penable;
-    logic [NB_MASTER-1:0]                     pwrite;
-    logic [NB_MASTER-1:0][APB_ADDR_WIDTH-1:0] paddr;
-    logic [NB_MASTER-1:0]                     psel;
-    logic [NB_MASTER-1:0][APB_DATA_WIDTH-1:0] pwdata;
-    logic [NB_MASTER-1:0][APB_DATA_WIDTH-1:0] prdata;
-    logic [NB_MASTER-1:0]                     pready;
-    logic [NB_MASTER-1:0]                     pslverr;
+    logic [NB_MANAGER-1:0]                     penable;
+    logic [NB_MANAGER-1:0]                     pwrite;
+    logic [NB_MANAGER-1:0][APB_ADDR_WIDTH-1:0] paddr;
+    logic [NB_MANAGER-1:0]                     psel;
+    logic [NB_MANAGER-1:0][APB_DATA_WIDTH-1:0] pwdata;
+    logic [NB_MANAGER-1:0][APB_DATA_WIDTH-1:0] prdata;
+    logic [NB_MANAGER-1:0]                     pready;
+    logic [NB_MANAGER-1:0]                     pslverr;
 
-    for (genvar i = 0; i < NB_MASTER; i++) begin
+    for (genvar i = 0; i < NB_MANAGER; i++) begin
         assign apb_masters[i].penable = penable[i];
         assign apb_masters[i].pwrite  = pwrite[i];
         assign apb_masters[i].paddr   = paddr[i];
@@ -54,7 +54,7 @@ module apb_node_wrap #(
     end
 
     apb_node #(
-        .NB_MASTER      ( NB_MASTER         ),
+        .NB_MANAGER      ( NB_MANAGER         ),
         .APB_DATA_WIDTH ( APB_DATA_WIDTH    ),
         .APB_ADDR_WIDTH ( APB_ADDR_WIDTH    )
     ) apb_node_i (

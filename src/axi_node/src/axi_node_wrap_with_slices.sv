@@ -20,8 +20,8 @@
 // Revision: Under version-control
 
 module axi_node_wrap_with_slices #(
-    parameter NB_MASTER          = 4,
-    parameter NB_SLAVE           = 4,
+    parameter NB_MANAGER          = 4,
+    parameter NB_SUBORDINATE           = 4,
     parameter AXI_ADDR_WIDTH     = 32,
     parameter AXI_DATA_WIDTH     = 32,
     parameter AXI_ID_WIDTH       = 10,
@@ -32,31 +32,31 @@ module axi_node_wrap_with_slices #(
     input logic      clk,
     input logic      rst_n,
     input logic      test_en_i,
-    AXI_BUS.Slave    slave  [NB_SLAVE-1:0],
-    AXI_BUS.Master   master [NB_MASTER-1:0],
+    AXI_BUS.Slave    slave  [NB_SUBORDINATE-1:0],
+    AXI_BUS.Master   master [NB_MANAGER-1:0],
     // Memory map
-    input  logic [NB_MASTER-1:0][AXI_ADDR_WIDTH-1:0] start_addr_i,
-    input  logic [NB_MASTER-1:0][AXI_ADDR_WIDTH-1:0] end_addr_i
+    input  logic [NB_MANAGER-1:0][AXI_ADDR_WIDTH-1:0] start_addr_i,
+    input  logic [NB_MANAGER-1:0][AXI_ADDR_WIDTH-1:0] end_addr_i
 );
-    localparam AXI_ID_OUT = AXI_ID_WIDTH + $clog2(NB_SLAVE);
+    localparam AXI_ID_OUT = AXI_ID_WIDTH + $clog2(NB_SUBORDINATE);
 
     AXI_BUS #(
       .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH  ),
       .AXI_DATA_WIDTH ( AXI_DATA_WIDTH  ),
       .AXI_ID_WIDTH   ( AXI_ID_WIDTH    ),
       .AXI_USER_WIDTH ( AXI_USER_WIDTH  )
-    ) axi_slave [NB_SLAVE-1:0]();
+    ) axi_slave [NB_SUBORDINATE-1:0]();
 
     AXI_BUS #(
        .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH ),
        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH ),
        .AXI_ID_WIDTH   ( AXI_ID_OUT     ),
        .AXI_USER_WIDTH ( AXI_USER_WIDTH )
-    ) axi_master [NB_MASTER-1:0]();
+    ) axi_master [NB_MANAGER-1:0]();
 
     axi_node_intf_wrap #(
-        .NB_MASTER      ( NB_MASTER      ),
-        .NB_SLAVE       ( NB_SLAVE       ),
+        .NB_MANAGER      ( NB_MANAGER      ),
+        .NB_SUBORDINATE       ( NB_SUBORDINATE       ),
         .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH   ),
@@ -71,7 +71,7 @@ module axi_node_wrap_with_slices #(
         .end_addr_i
     );
 
-    for (genvar i = 0; i < NB_MASTER; i++) begin : axi_slice_master_port
+    for (genvar i = 0; i < NB_MANAGER; i++) begin : axi_slice_master_port
         axi_multicut #(
             .ADDR_WIDTH ( AXI_ADDR_WIDTH     ),
             .DATA_WIDTH ( AXI_DATA_WIDTH     ),
@@ -86,7 +86,7 @@ module axi_node_wrap_with_slices #(
         );
     end
 
-    for (genvar i = 0; i < NB_SLAVE; i++) begin : axi_slice_slave_port
+    for (genvar i = 0; i < NB_SUBORDINATE; i++) begin : axi_slice_slave_port
         axi_multicut #(
             .ADDR_WIDTH ( AXI_ADDR_WIDTH    ),
             .DATA_WIDTH ( AXI_DATA_WIDTH    ),
