@@ -13,7 +13,7 @@ Mkdir hackdac_alpha
 ```
 2. Download the [RISC-V tools](https://drive.google.com/drive/folders/1QH6BuNU2eiIv19rBtn7zWPXdTk3HRXlN?usp=s), [fesvr_source](https://drive.google.com/drive/folders/1QH6BuNU2eiIv19rBtn7zWPXdTk3HRXlN), and Checkout the repository of the hackdac_2019
 ```
-$ git clone https://github.com/PouyaMahmoody/hackdac_2019
+$ git clone https://github.com/HACK-EVENT/hackatdac19.git
 $ git submodule update --init --recursive
 ```
 
