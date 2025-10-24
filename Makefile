@@ -208,6 +208,16 @@ else
     questa-cmd += +jtag_rbb_enable=0
 endif
 
+# Yosys-specific variables for pickle target
+YOSYS ?= yosys
+verilog_src := $(filter %.sv %.v, $(ariane_pkg) $(util) $(src) $(fpga_src))
+yosys_cmd := $(YOSYS) -p "verific -sv $(verilog_src)" -p "hierarchy -check -top ariane; write_verilog ariane_pickle.v"
+# 	proc; opt; fsm; opt; memory; opt; \
+# 	techmap; opt; \
+# 	hierarchy -check; \
+# 	write_verilog ariane_pickle.v \
+"
+
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
@@ -405,6 +415,11 @@ check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
+# Pickle target: Synthesize RTL to netlist using Yosys and output as Verilog
+pickle: $(verilog_src)
+	@echo "[Yosys] Pickling design (top: ariane)"
+	$(yosys_cmd)
+
 fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(util) $(uart_src)
 	@echo "[FPGA] Generate sources"
 	@echo read_vhdl        {$(uart_src)}   > fpga/scripts/add_sources.tcl
@@ -421,6 +436,7 @@ clean:
 	rm -rf $(riscv-torture-dir)/output/test*
 	rm -rf $(library)/ $(dpi-library)/ $(ver-library)/
 	rm -f tmp/*.ucdb tmp/*.log *.wlf *vstf wlft* *.ucdb
+	rm -f ariane_pickle.v yosys_pickle.log
 
 .PHONY:
 	build sim sim-verilate clean                                              \
@@ -428,5 +444,5 @@ clean:
 	$(riscv-benchmarks) $(addsuffix _verilator,$(riscv-benchmarks))           \
 	check-benchmarks check-asm-tests                                          \
 	torture-gen torture-itest torture-rtest                                   \
-	run-torture run-torture-verilator check-torture check-torture-verilator
-
+	run-torture run-torture-verilator check-torture check-torture-verilator  \
+	pickle
