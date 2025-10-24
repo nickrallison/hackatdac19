@@ -210,13 +210,24 @@ endif
 
 # Yosys-specific variables for pickle target
 YOSYS ?= yosys
-verilog_src := $(filter %.sv %.v, $(ariane_pkg) $(util) $(src) $(fpga_src))
+all_rtl_src := $(ariane_pkg) $(util) $(src) $(fpga_src)
+rtl_files := $(filter-out \
+    %/tb/ariane_testharness.sv \
+    %/tb/ariane_peripherals.sv \
+    %/tb/common/uart.sv \
+    %/tb/common/SimDTM.sv \
+    %/tb/common/SimJTAG.sv \
+    %/fpga/src/ariane_xilinx.sv \
+    %/fpga/src/ariane_peripherals_xilinx.sv \
+    %/fpga/src/fan_ctrl.sv \
+    %/fpga/src/rgmii_to_mii_conv_xilinx.sv \
+    %/fpga/src/bootrom/bootrom.sv, \
+    $(all_rtl_src))
+
+verilog_src := $(filter %.sv %.v, $(rtl_files))
 yosys_cmd := $(YOSYS) -p "verific -sv $(verilog_src)" -p "hierarchy -check -top ariane; write_verilog ariane_pickle.v"
-# 	proc; opt; fsm; opt; memory; opt; \
-# 	techmap; opt; \
-# 	hierarchy -check; \
-# 	write_verilog ariane_pickle.v \
-"
+
+
 
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
