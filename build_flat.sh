@@ -26,6 +26,7 @@ done
 
 # Sort, unique, and format as a space-separated string for Yosys
 INC_DIRS=$(echo $ALL_DIRS | tr ' ' '\n' | sort -u | tr '\n' ' ')
+INC_DIRS="$INC_DIRS ./include"
 
 # 3. Construct the Yosys build script
 echo "[3/4] Constructing Yosys build script ($YS_FILE)..."
